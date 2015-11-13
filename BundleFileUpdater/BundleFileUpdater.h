@@ -6,7 +6,7 @@
 //  Copyright © 2015 apploft GmbH. All rights reserved.
 //
 
-#import <UIKit/UIKit.h>
+#import <Foundation/Foundation.h>
 
 //! Project version number for BundleFileUpdater.
 FOUNDATION_EXPORT double BundleFileUpdaterVersionNumber;

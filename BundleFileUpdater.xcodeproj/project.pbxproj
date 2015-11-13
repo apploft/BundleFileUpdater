@@ -10,6 +10,7 @@
 		B38436EB1BF62E9F00F5E1FA /* BundleFileUpdater.h in Headers */ = {isa = PBXBuildFile; fileRef = B38436EA1BF62E9F00F5E1FA /* BundleFileUpdater.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		B38436F21BF62E9F00F5E1FA /* BundleFileUpdater.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B38436E71BF62E9F00F5E1FA /* BundleFileUpdater.framework */; };
 		B38436F71BF62E9F00F5E1FA /* BundleFileUpdaterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B38436F61BF62E9F00F5E1FA /* BundleFileUpdaterTests.swift */; };
+		B38437021BF62FBE00F5E1FA /* BundleFileUpdater.swift in Sources */ = {isa = PBXBuildFile; fileRef = B38437011BF62FBE00F5E1FA /* BundleFileUpdater.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -29,6 +30,7 @@
 		B38436F11BF62E9F00F5E1FA /* BundleFileUpdaterTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = BundleFileUpdaterTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		B38436F61BF62E9F00F5E1FA /* BundleFileUpdaterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BundleFileUpdaterTests.swift; sourceTree = "<group>"; };
 		B38436F81BF62E9F00F5E1FA /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		B38437011BF62FBE00F5E1FA /* BundleFileUpdater.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BundleFileUpdater.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -72,6 +74,7 @@
 			isa = PBXGroup;
 			children = (
 				B38436EA1BF62E9F00F5E1FA /* BundleFileUpdater.h */,
+				B38437011BF62FBE00F5E1FA /* BundleFileUpdater.swift */,
 				B38436EC1BF62E9F00F5E1FA /* Info.plist */,
 			);
 			path = BundleFileUpdater;
@@ -194,6 +197,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				B38437021BF62FBE00F5E1FA /* BundleFileUpdater.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -308,6 +312,7 @@
 		B38436FC1BF62E9F00F5E1FA /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_ENABLE_MODULES = YES;
 				DEFINES_MODULE = YES;
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
@@ -318,12 +323,14 @@
 				PRODUCT_BUNDLE_IDENTIFIER = de.apploft.BundleFileUpdater;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 			};
 			name = Debug;
 		};
 		B38436FD1BF62E9F00F5E1FA /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_ENABLE_MODULES = YES;
 				DEFINES_MODULE = YES;
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
@@ -376,6 +383,7 @@
 				B38436FD1BF62E9F00F5E1FA /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 		B38436FE1BF62E9F00F5E1FA /* Build configuration list for PBXNativeTarget "BundleFileUpdaterTests" */ = {
 			isa = XCConfigurationList;
@@ -384,6 +392,7 @@
 				B38437001BF62E9F00F5E1FA /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};
