@@ -2,10 +2,10 @@ Pod::Spec.new do |s|
 
   s.name         = "BundleFileUpdater"
   s.version      = "0.0.1"
-  s.summary      = "My own description."
+  s.summary      = "Deliver your app with up-to-date local resource files and update them dynamically from a remote url."
 
   s.description  = <<-DESC
-  My own description of BundleFileUpdater.
+  Deliver your app with up-to-date local resource files in your app bundle and update them dynamically from a remote url both with every build and dynamically at runtime. Your users will always have the latest resource files' version without the need for a new app submission.
                    DESC
 
   s.homepage     = "https://github.com/apploft/BundleFileUpdater"
