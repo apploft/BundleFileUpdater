@@ -181,7 +181,7 @@ public class BundleFileUpdater {
      To update your files on every build, go to your the _Build Phases_ tab for your project's target settings, add a _New Run Script Phase_ before the _Compile Sources_ phase and insert the follwing script where `"$SRCROOT/YourSourceDirectory/DownloadScript.swift"` is the new file you just created with the call to this method:
      
      ```sh
-     cat "$PODS_ROOT/BundleFileUpdater/BundleFileUpdater/BundleFileUpdater.swift" "$SRCROOT/YourSourceDirectory/DownloadScript.swift" | swift -
+     cat "$PODS_ROOT/BundleFileUpdater/BundleFileUpdater/BundleFileUpdater.swift" "$SRCROOT/YourSourceDirectory/DownloadScript.swift" | xcrun -sdk macosx swift -
      ```
      
      - parameter files: the dictionary key is the path to the file in the app bundle relative to the project directory that should be updated if needed from the remote url string that is given as the corresponsing dictionary value. If the files' content have changed online and are not empty, the local files will be replaced by the downloaded remote files.
