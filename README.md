@@ -13,7 +13,7 @@ Deliver your app with up-to-date local resource files in your app bundle and upd
 Keep a local file in the app bundle up-to-date from two sources: from the app bundle and from a remote URL. Therefore an updatable copy of this file is automatically copied from the app bundle to the document directory which should be the single source of truth in your application. No need to reference the file from app bundle or the remote URL directly anywhere else except for the `BundleFileUpdater.updateFile` call. The method supports a simple, automatic and optional string search and replace before updating the file from either source:
 
 ```swift
-let localFileURL = BundleFileUpdater.updateFile("about.html", url: "https://www.example.com/about.html", replacingTexts: ["href=\"/terms-of-service.html\"": "href=\"tos.html\""], didReplaceFile: { (destinationURL, error) in
+let localFileURL = BundleFileUpdater.updateFile("about.html", url: "https://www.example.com/about.html", header: ["User-Agent": "My User-Agent"], replacingTexts: ["href=\"/terms-of-service.html\"": "href=\"tos.html\""], didReplaceFile: { (destinationURL, error) in
     guard error == nil else {
        // an error occured or the remote file had no changes …
        return
@@ -37,7 +37,7 @@ let files = [
    "YourSourceDirectory/about.html": "https://www.example.com/about.html",
    "YourSourceDirectory/tos.html": "https://www.example.com/terms-of-service.html"
 ]
-BundleFileUpdater.updateBundleFilesFromCLI(files)
+BundleFileUpdater.updateBundleFilesFromCLI(files, header: ["User-Agent": "My User-Agent"])
 ```
 
 To update your files on every build, go to your the _Build Phases_ tab for your project's target settings, add a _New Run Script Phase_ before the _Compile Sources_ phase and insert the follwing script where `"$SRCROOT/YourSourceDirectory/DownloadScript.swift"` is the new file you just created with the call to `BundleFileUpdater.updateBundleFilesFromCLI`:
