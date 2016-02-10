@@ -43,6 +43,7 @@ public class BundleFileUpdater {
      - parameter filename: name of the file in the app bundle including file extension
      - parameter url: url of a remote version of the updatable file with the given `filename`. If the file contents have changed online and are not empty, the local file will be replaced by the downloaded remote file.
      - parameter header: optional dictionary with HTTP header fields
+     - parameter encoding: optional encoding to use when creating string from downloaded data (default: NSUTF8StringEncoding)
      - parameter replacingTexts: optional dictionary of strings in case some contents of the updated file need to be automatically replaced, e.g. references or links need to be changed from remote to local targets. The dictionary's key is the string being searched and the value is the key's replacement string.
      - parameter didReplaceFile: completion handler that is called in case of an update or an error. The completion handler is called with it's argument `error` being `nil` and `destinationURL` pointing to the updated file in documents directory using the `file://` scheme when the file in the document directory has been updated by a newer version of itself in the app bundle (newer modification date) or when it has been updated from the given `url` when the remote file content is not empty and differs from the local file content. In case of an error the `destinationURL` might be pointing to the old version of the file in document directory as long as the error did not occur during initialization and `error` is the NSError that has occured. The case when there was no need to update because nothing has changed is handled as error with `BundleFileUpdaterErrorDomain` and code 1.
      - returns: NSURL for the file with the given `filename` in the document directory using the `file://` scheme. Returns `nil` if the initialization failed.
@@ -59,7 +60,7 @@ public class BundleFileUpdater {
      })
      ```
      */
-    public class func updateFile(filename: String, url: String, header: [String: String]? = nil, replacingTexts: [String: String] = [:], didReplaceFile: ((destinationURL: NSURL?, error: NSError?) -> ())? = nil) -> NSURL? {
+    public class func updateFile(filename: String, url: String, header: [String: String]? = nil, encoding: UInt = NSUTF8StringEncoding, replacingTexts: [String: String] = [:], didReplaceFile: ((destinationURL: NSURL?, error: NSError?) -> ())? = nil) -> NSURL? {
         let fileManager = NSFileManager.defaultManager()
         let destinationText: String
         
@@ -78,7 +79,7 @@ public class BundleFileUpdater {
             let destinationFileModifiedDate = (try? fileManager.attributesOfItemAtPath(destinationPath)[NSFileModificationDate]) as? NSDate
             if (destinationFileModifiedDate == nil) || (bundleFileModifiedDate.compare(destinationFileModifiedDate!) == .OrderedDescending) {
                 let bundleText = try String(contentsOfFile: bundlePath)
-                try replaceText(bundleText, replacingTexts: replacingTexts).writeToFile(destinationPath, atomically: true, encoding: NSUTF8StringEncoding)
+                try replaceText(bundleText, replacingTexts: replacingTexts).writeToFile(destinationPath, atomically: true, encoding: encoding)
                 destinationText = try String(contentsOfFile: destinationPath)
                 didReplaceFile?(destinationURL: destinationURL, error: nil)
             } else {
@@ -102,10 +103,10 @@ public class BundleFileUpdater {
                     return
             }
             
-            let text = replaceText(String(data: data, encoding: NSUTF8StringEncoding) ?? "", replacingTexts: replacingTexts)
+            let text = replaceText(String(data: data, encoding: encoding) ?? "", replacingTexts: replacingTexts)
             if !text.isEmpty && (text != destinationText) {
                 do {
-                    try text.writeToFile(destinationPath, atomically: true, encoding: NSUTF8StringEncoding)
+                    try text.writeToFile(destinationPath, atomically: true, encoding: encoding)
                     didReplaceFile?(destinationURL: destinationURL, error: nil)
                 } catch let error as NSError {
                     didReplaceFile?(destinationURL: destinationURL, error: error)
@@ -136,7 +137,7 @@ public class BundleFileUpdater {
         return NSURL(string: "file://" + documentsPath)?.URLByAppendingPathComponent(filename)
     }
     
-    private class func updateBundleFile(filepath: String, url: String, header: [String: String]? = nil, completion: (String) -> ()) {
+    private class func updateBundleFile(filepath: String, url: String, header: [String: String]? = nil, encoding: UInt = NSUTF8StringEncoding, completion: (String) -> ()) {
         guard let url = NSURL(string: url) else {
             return completion("invalid url for file '\(filepath)'")
         }
@@ -152,12 +153,12 @@ public class BundleFileUpdater {
                     return completion("download for file '\(filepath)' failed with error: \(error)")
             }
             
-            let text = String(data: data, encoding: NSUTF8StringEncoding) ?? ""
+            let text = String(data: data, encoding: encoding) ?? ""
             let destinationText = try? String(contentsOfFile: filepath) ?? ""
             
             if !text.isEmpty && (text != destinationText) {
                 do {
-                    try text.writeToFile(filepath, atomically: true, encoding: NSUTF8StringEncoding)
+                    try text.writeToFile(filepath, atomically: true, encoding: encoding)
                     completion("successfully updated file '\(filepath)'")
                 } catch let error as NSError {
                     completion("writing to file '\(filepath)' failed with error: \(error)")
@@ -191,14 +192,15 @@ public class BundleFileUpdater {
      
      - parameter files: the dictionary key is the path to the file in the app bundle relative to the project directory that should be updated if needed from the remote url string that is given as the corresponsing dictionary value. If the files' content have changed online and are not empty, the local files will be replaced by the downloaded remote files..
      - parameter header: optional dictionary with HTTP header fields
+     - parameter encoding: optional encoding to use when creating string from downloaded data (default: NSUTF8StringEncoding)
      - warning: Never call this method from app code as it calls `exit()`. It is designated to be called from a command line script.
      */
-    public class func updateBundleFilesFromCLI(files: [String: String], header: [String: String]? = nil) {
+    public class func updateBundleFilesFromCLI(files: [String: String], header: [String: String]? = nil, encoding: UInt = NSUTF8StringEncoding) {
         let group = dispatch_group_create()
         
         for (filepath, url) in files {
             dispatch_group_enter(group)
-            updateBundleFile(filepath, url: url, header: header) { (message) in
+            updateBundleFile(filepath, url: url, header: header, encoding: encoding) { (message) in
                 print(message)
                 dispatch_group_leave(group)
             }
