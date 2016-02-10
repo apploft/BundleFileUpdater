@@ -78,12 +78,12 @@ public class BundleFileUpdater {
         do {
             let destinationFileModifiedDate = (try? fileManager.attributesOfItemAtPath(destinationPath)[NSFileModificationDate]) as? NSDate
             if (destinationFileModifiedDate == nil) || (bundleFileModifiedDate.compare(destinationFileModifiedDate!) == .OrderedDescending) {
-                let bundleText = try String(contentsOfFile: bundlePath)
+                let bundleText = try String(contentsOfFile: bundlePath, encoding: encoding)
                 try replaceText(bundleText, replacingTexts: replacingTexts).writeToFile(destinationPath, atomically: true, encoding: encoding)
-                destinationText = try String(contentsOfFile: destinationPath)
+                destinationText = try String(contentsOfFile: destinationPath, encoding: encoding)
                 didReplaceFile?(destinationURL: destinationURL, error: nil)
             } else {
-                destinationText = try String(contentsOfFile: destinationPath)
+                destinationText = try String(contentsOfFile: destinationPath, encoding: encoding)
             }
         } catch let error as NSError {
             didReplaceFile?(destinationURL: destinationURL, error: error)
@@ -154,7 +154,7 @@ public class BundleFileUpdater {
             }
             
             let text = String(data: data, encoding: encoding) ?? ""
-            let destinationText = try? String(contentsOfFile: filepath) ?? ""
+            let destinationText = try? String(contentsOfFile: filepath, encoding: encoding) ?? ""
             
             if !text.isEmpty && (text != destinationText) {
                 do {
