@@ -37,7 +37,7 @@ let files = [
    "YourSourceDirectory/about.html": "https://www.example.com/about.html",
    "YourSourceDirectory/tos.html": "https://www.example.com/terms-of-service.html"
 ]
-BundleFileUpdater.updateBundleFilesFromCLI(files, header: ["User-Agent": "My User-Agent"])
+BundleFileUpdater.updateBundleFilesFromCLI(files, header: ["User-Agent": "My User-Agent"], replacingTexts: ["href=\"/terms-of-service.html\"": "href=\"tos.html\""])
 ```
 
 To update your files on every build, go to your the _Build Phases_ tab for your project's target settings, add a _New Run Script Phase_ before the _Compile Sources_ phase and insert the follwing script where `"$SRCROOT/YourSourceDirectory/DownloadScript.swift"` is the new file you just created with the call to `BundleFileUpdater.updateBundleFilesFromCLI`:

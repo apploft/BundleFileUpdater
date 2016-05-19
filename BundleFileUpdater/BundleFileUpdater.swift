@@ -137,7 +137,7 @@ public class BundleFileUpdater {
         return NSURL(string: "file://" + documentsPath)?.URLByAppendingPathComponent(filename)
     }
     
-    private class func updateBundleFile(filepath: String, url: String, header: [String: String]? = nil, encoding: UInt = NSUTF8StringEncoding, completion: (String) -> ()) {
+    private class func updateBundleFile(filepath: String, url: String, header: [String: String]? = nil, encoding: UInt = NSUTF8StringEncoding, replacingTexts: [String: String] = [:], completion: (String) -> ()) {
         guard let url = NSURL(string: url) else {
             return completion("invalid url for file '\(filepath)'")
         }
@@ -153,7 +153,7 @@ public class BundleFileUpdater {
                     return completion("download for file '\(filepath)' failed with error: \(error)")
             }
             
-            let text = String(data: data, encoding: encoding) ?? ""
+            let text = replaceText(String(data: data, encoding: encoding) ?? "", replacingTexts: replacingTexts)
             let destinationText = try? String(contentsOfFile: filepath, encoding: encoding) ?? ""
             
             if !text.isEmpty && (text != destinationText) {
@@ -193,14 +193,15 @@ public class BundleFileUpdater {
      - parameter files: the dictionary key is the path to the file in the app bundle relative to the project directory that should be updated if needed from the remote url string that is given as the corresponsing dictionary value. If the files' content have changed online and are not empty, the local files will be replaced by the downloaded remote files..
      - parameter header: optional dictionary with HTTP header fields
      - parameter encoding: optional encoding to use when creating string from downloaded data (default: NSUTF8StringEncoding)
+     - parameter replacingTexts: optional dictionary of strings in case some contents of the updated file need to be automatically replaced, e.g. references or links need to be changed from remote to local targets. The dictionary's key is the string being searched and the value is the key's replacement string.
      - warning: Never call this method from app code as it calls `exit()`. It is designated to be called from a command line script.
      */
-    public class func updateBundleFilesFromCLI(files: [String: String], header: [String: String]? = nil, encoding: UInt = NSUTF8StringEncoding) {
+    public class func updateBundleFilesFromCLI(files: [String: String], header: [String: String]? = nil, encoding: UInt = NSUTF8StringEncoding, replacingTexts: [String: String] = [:]) {
         let group = dispatch_group_create()
         
         for (filepath, url) in files {
             dispatch_group_enter(group)
-            updateBundleFile(filepath, url: url, header: header, encoding: encoding) { (message) in
+            updateBundleFile(filepath, url: url, header: header, encoding: encoding, replacingTexts: replacingTexts) { (message) in
                 print(message)
                 dispatch_group_leave(group)
             }
