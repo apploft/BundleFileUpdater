@@ -14,7 +14,7 @@ import Foundation
  
  Use `updateFile(filename: String, url: String, replacingTexts: [String: String] = [:], didReplaceFile: ((destinationURL: NSURL?, error: NSError?) -> ())? = nil) -> NSURL?` from your app code to download a new version of your resource file if needed and use it instead of the file's version in your app bundle.
 */
-public class BundleFileUpdater {
+open class BundleFileUpdater {
     
     /**
      Error domain for errors specific to BundleFileUpdater.
@@ -23,16 +23,16 @@ public class BundleFileUpdater {
      - 0: initialization failed: a given `filename` could not be found in app bundle or his destination path in the document directory could not be resolved
      - 1: downloaded file has no changes or is empty
      */
-    public static let BundleFileUpdaterErrorDomain = "BundleFileUpdaterErrorDomain"
+    open static let BundleFileUpdaterErrorDomain = "BundleFileUpdaterErrorDomain"
     
-    private static let codeToReason = ["initialization failed", "downloaded file has no changes or is empty"]
-    private static let documentsPath = NSSearchPathForDirectoriesInDomains(.DocumentDirectory, .UserDomainMask, true).first
+    fileprivate static let codeToReason = ["initialization failed", "downloaded file has no changes or is empty"]
+    fileprivate static let documentsPath = NSSearchPathForDirectoriesInDomains(.documentDirectory, .userDomainMask, true).first
     
-    private class func replaceText(text: String, replacingTexts: [String: String]) -> String {
+    fileprivate class func replaceText(_ text: String, replacingTexts: [String: String]) -> String {
         var text = text
         
         for (target, replacement) in replacingTexts {
-            text = text.stringByReplacingOccurrencesOfString(target, withString: replacement)
+            text = text.replacingOccurrences(of: target, with: replacement)
         }
         
         return text
@@ -60,61 +60,61 @@ public class BundleFileUpdater {
      })
      ```
      */
-    public class func updateFile(filename: String, url: String, header: [String: String]? = nil, encoding: UInt = NSUTF8StringEncoding, replacingTexts: [String: String] = [:], didReplaceFile: ((destinationURL: NSURL?, error: NSError?) -> ())? = nil) -> NSURL? {
-        let fileManager = NSFileManager.defaultManager()
+    open class func updateFile(_ filename: String, url: String, header: [String: String]? = nil, encoding: String.Encoding = .utf8, replacingTexts: [String: String] = [:], didReplaceFile: ((_ destinationURL: URL?, _ error: Error?) -> ())? = nil) -> URL? {
+        let fileManager = FileManager.default
         let destinationText: String
         
-        guard let url = NSURL(string: url),
-            bundleURL = NSBundle.mainBundle().URLForResource(filename, withExtension: nil),
-            bundlePath = bundleURL.path,
-            bundleFileModifiedDate = (try? fileManager.attributesOfItemAtPath(bundlePath)[NSFileModificationDate]) as? NSDate,
-            documentsPath = documentsPath,
-            destinationURL = NSURL(string: "file://" + documentsPath)?.URLByAppendingPathComponent(filename),
-            destinationPath = destinationURL.path else {
-                didReplaceFile?(destinationURL: nil, error: NSError(code: 0))
+        guard let url = URL(string: url),
+            let bundleURL = Bundle.main.url(forResource: filename, withExtension: nil),
+            let bundleFileModifiedDate = (try? fileManager.attributesOfItem(atPath: bundleURL.path)[FileAttributeKey.modificationDate]) as? Date,
+            let documentsPath = documentsPath,
+            let destinationURL = URL(string: "file://" + documentsPath)?.appendingPathComponent(filename) else {
+                didReplaceFile?(nil, NSError(code: 0))
                 return nil
         }
         
+        let destinationPath = destinationURL.path
+        
         do {
-            let destinationFileModifiedDate = (try? fileManager.attributesOfItemAtPath(destinationPath)[NSFileModificationDate]) as? NSDate
-            if (destinationFileModifiedDate == nil) || (bundleFileModifiedDate.compare(destinationFileModifiedDate!) == .OrderedDescending) {
-                let bundleText = try String(contentsOfFile: bundlePath, encoding: encoding)
-                try replaceText(bundleText, replacingTexts: replacingTexts).writeToFile(destinationPath, atomically: true, encoding: encoding)
+            let destinationFileModifiedDate = (try? fileManager.attributesOfItem(atPath: destinationPath)[FileAttributeKey.modificationDate]) as? Date
+            if (destinationFileModifiedDate == nil) || (bundleFileModifiedDate.compare(destinationFileModifiedDate!) == .orderedDescending) {
+                let bundleText = try String(contentsOfFile: bundleURL.path, encoding: encoding)
+                try replaceText(bundleText, replacingTexts: replacingTexts).write(toFile: destinationPath, atomically: true, encoding: encoding)
                 destinationText = try String(contentsOfFile: destinationPath, encoding: encoding)
-                didReplaceFile?(destinationURL: destinationURL, error: nil)
+                didReplaceFile?(destinationURL, nil)
             } else {
                 destinationText = try String(contentsOfFile: destinationPath, encoding: encoding)
             }
         } catch let error as NSError {
-            didReplaceFile?(destinationURL: destinationURL, error: error)
+            didReplaceFile?(destinationURL, error)
             return destinationURL
         }
         
         
-        let sessionConfig = NSURLSessionConfiguration.defaultSessionConfiguration()
-        let session = NSURLSession(configuration: sessionConfig, delegate: nil, delegateQueue: nil)
-        let request = NSMutableURLRequest(URL: url)
+        let sessionConfig = URLSessionConfiguration.default
+        let session = URLSession(configuration: sessionConfig, delegate: nil, delegateQueue: nil)
+        let request = NSMutableURLRequest(url: url)
         request.allHTTPHeaderFields = header
         
-        let task = session.dataTaskWithRequest(request) { (data, response, error) in
+        let task = session.dataTask(with: request as URLRequest, completionHandler: { (data, response, error) in
             guard error == nil,
                 let data = data else {
-                    didReplaceFile?(destinationURL: destinationURL, error: error)
+                    didReplaceFile?(destinationURL, error)
                     return
             }
             
             let text = replaceText(String(data: data, encoding: encoding) ?? "", replacingTexts: replacingTexts)
             if !text.isEmpty && (text != destinationText) {
                 do {
-                    try text.writeToFile(destinationPath, atomically: true, encoding: encoding)
-                    didReplaceFile?(destinationURL: destinationURL, error: nil)
+                    try text.write(toFile: destinationPath, atomically: true, encoding: encoding)
+                    didReplaceFile?(destinationURL, nil)
                 } catch let error as NSError {
-                    didReplaceFile?(destinationURL: destinationURL, error: error)
+                    didReplaceFile?(destinationURL, error)
                 }
             } else {
-                didReplaceFile?(destinationURL: destinationURL, error: NSError(code: 1))
+                didReplaceFile?(destinationURL, NSError(code: 1))
             }
-        }
+        }) 
         task.resume()
         
         return destinationURL
@@ -130,35 +130,35 @@ public class BundleFileUpdater {
      let localFileURL = BundleFileUpdater.urlForFile("about.html")
      ```
      */
-    public class func urlForFile(filename: String) -> NSURL? {
+    open class func urlForFile(_ filename: String) -> URL? {
         guard let documentsPath = documentsPath else {
             return nil
         }
-        return NSURL(string: "file://" + documentsPath)?.URLByAppendingPathComponent(filename)
+        return URL(string: "file://" + documentsPath)?.appendingPathComponent(filename)
     }
     
-    private class func updateBundleFile(filepath: String, url: String, header: [String: String]? = nil, encoding: UInt = NSUTF8StringEncoding, replacingTexts: [String: String] = [:], completion: (String) -> ()) {
-        guard let url = NSURL(string: url) else {
+    fileprivate class func updateBundleFile(_ filepath: String, url: String, header: [String: String]? = nil, encoding: String.Encoding = .utf8, replacingTexts: [String: String] = [:], completion: @escaping (String) -> ()) {
+        guard let url = URL(string: url) else {
             return completion("invalid url for file '\(filepath)'")
         }
         
-        let sessionConfig = NSURLSessionConfiguration.defaultSessionConfiguration()
-        let session = NSURLSession(configuration: sessionConfig, delegate: nil, delegateQueue: nil)
-        let request = NSMutableURLRequest(URL: url)
+        let sessionConfig = URLSessionConfiguration.default
+        let session = URLSession(configuration: sessionConfig, delegate: nil, delegateQueue: nil)
+        let request = NSMutableURLRequest(url: url)
         request.allHTTPHeaderFields = header
         
-        let task = session.dataTaskWithRequest(request) { (data, response, error) in
+        let task = session.dataTask(with: request as URLRequest, completionHandler: { (data, response, error) in
             guard error == nil,
                 let data = data else {
                     return completion("download for file '\(filepath)' failed with error: \(error)")
             }
             
             let text = replaceText(String(data: data, encoding: encoding) ?? "", replacingTexts: replacingTexts)
-            let destinationText = try? String(contentsOfFile: filepath, encoding: encoding) ?? ""
+            let destinationText = try? String(contentsOfFile: filepath, encoding: encoding)
             
             if !text.isEmpty && (text != destinationText) {
                 do {
-                    try text.writeToFile(filepath, atomically: true, encoding: encoding)
+                    try text.write(toFile: filepath, atomically: true, encoding: encoding)
                     completion("successfully updated file '\(filepath)'")
                 } catch let error as NSError {
                     completion("writing to file '\(filepath)' failed with error: \(error)")
@@ -166,7 +166,7 @@ public class BundleFileUpdater {
             } else {
                 completion("downloaded file has no changes or is empty for file '\(filepath)'")
             }
-        }
+        }) 
         task.resume()
     }
     
@@ -196,22 +196,22 @@ public class BundleFileUpdater {
      - parameter replacingTexts: optional dictionary of strings in case some contents of the updated file need to be automatically replaced, e.g. references or links need to be changed from remote to local targets. The dictionary's key is the string being searched and the value is the key's replacement string.
      - warning: Never call this method from app code as it calls `exit()`. It is designated to be called from a command line script.
      */
-    public class func updateBundleFilesFromCLI(files: [String: String], header: [String: String]? = nil, encoding: UInt = NSUTF8StringEncoding, replacingTexts: [String: String] = [:]) {
-        let group = dispatch_group_create()
+    open class func updateBundleFilesFromCLI(_ files: [String: String], header: [String: String]? = nil, encoding: String.Encoding = .utf8, replacingTexts: [String: String] = [:]) {
+        let group = DispatchGroup()
         
         for (filepath, url) in files {
-            dispatch_group_enter(group)
+            group.enter()
             updateBundleFile(filepath, url: url, header: header, encoding: encoding, replacingTexts: replacingTexts) { (message) in
                 print(message)
-                dispatch_group_leave(group)
+                group.leave()
             }
         }
         
-        dispatch_group_notify(group, dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH, 0)) {
+        group.notify(queue: DispatchQueue.global()) {
             exit(0)
         }
         
-        NSRunLoop.currentRunLoop().run()
+        RunLoop.current.run()
     }
 
 }
