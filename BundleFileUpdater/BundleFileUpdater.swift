@@ -150,7 +150,7 @@ open class BundleFileUpdater {
         let task = session.dataTask(with: request as URLRequest, completionHandler: { (data, response, error) in
             guard error == nil,
                 let data = data else {
-                    return completion("download for file '\(filepath)' failed with error: \(error)")
+                    return completion("download for file '\(filepath)' failed with error: \(String(describing: error))")
             }
             
             let text = replaceText(String(data: data, encoding: encoding) ?? "", replacingTexts: replacingTexts)
@@ -196,7 +196,7 @@ open class BundleFileUpdater {
      - parameter replacingTexts: optional dictionary of strings in case some contents of the updated file need to be automatically replaced, e.g. references or links need to be changed from remote to local targets. The dictionary's key is the string being searched and the value is the key's replacement string.
      - warning: Never call this method from app code as it calls `exit()`. It is designated to be called from a command line script.
      */
-    @available(OSX 10.9, *)
+    @available(OSX 10.10, *)
     open class func updateBundleFilesFromCLI(_ files: [String: String], header: [String: String]? = nil, encoding: String.Encoding = .utf8, replacingTexts: [String: String] = [:]) {
         let group = DispatchGroup()
         
@@ -208,14 +208,8 @@ open class BundleFileUpdater {
             }
         }
         
-        if #available(OSX 10.10, *) {
-            group.notify(queue: DispatchQueue.global()) {
-                exit(0)
-            }
-        } else {
-            group.notify(queue: DispatchQueue.global(priority: .default)) {
-                exit(0)
-            }
+        group.notify(queue: DispatchQueue.global()) {
+            exit(0)
         }
         
         RunLoop.current.run()
