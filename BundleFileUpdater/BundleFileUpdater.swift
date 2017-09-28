@@ -26,7 +26,7 @@ open class BundleFileUpdater {
     open static let BundleFileUpdaterErrorDomain = "BundleFileUpdaterErrorDomain"
     
     fileprivate static let codeToReason = ["initialization failed", "downloaded file has no changes or is empty"]
-    fileprivate static let documentsPath = NSSearchPathForDirectoriesInDomains(.documentDirectory, .userDomainMask, true).first
+    fileprivate static let applicationSupportURL = try? FileManager.default.url(for: .applicationSupportDirectory, in: .userDomainMask, appropriateFor: nil, create: true).appendingPathComponent("BundleFileUpdater", isDirectory: true)
     
     fileprivate class func replaceText(_ text: String, replacingTexts: [String: String]) -> String {
         var text = text
@@ -67,12 +67,20 @@ open class BundleFileUpdater {
         guard let url = URL(string: url),
             let bundleURL = Bundle.main.url(forResource: filename, withExtension: nil),
             let bundleFileModifiedDate = (try? fileManager.attributesOfItem(atPath: bundleURL.path)[FileAttributeKey.modificationDate]) as? Date,
-            let documentsPath = documentsPath,
-            let destinationURL = URL(string: "file://" + documentsPath)?.appendingPathComponent(filename) else {
+            let applicationSupportURL = applicationSupportURL else {
                 didReplaceFile?(nil, NSError(code: 0))
                 return nil
         }
         
+        if !fileManager.fileExists(atPath: applicationSupportURL.path) {
+            do {
+                try FileManager.default.createDirectory(atPath: applicationSupportURL.path, withIntermediateDirectories: true, attributes: nil)
+            } catch {
+                print(error)
+            }
+        }
+        
+        let destinationURL = applicationSupportURL.appendingPathComponent(filename)
         let destinationPath = destinationURL.path
         
         do {
@@ -131,10 +139,10 @@ open class BundleFileUpdater {
      ```
      */
     open class func urlForFile(_ filename: String) -> URL? {
-        guard let documentsPath = documentsPath else {
+        guard let applicationSupportURL = applicationSupportURL else {
             return nil
         }
-        return URL(string: "file://" + documentsPath)?.appendingPathComponent(filename)
+        return applicationSupportURL.appendingPathComponent(filename)
     }
     
     fileprivate class func updateBundleFile(_ filepath: String, url: String, header: [String: String]? = nil, encoding: String.Encoding = .utf8, replacingTexts: [String: String] = [:], completion: @escaping (String) -> ()) {
