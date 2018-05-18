@@ -1,7 +1,7 @@
 Pod::Spec.new do |s|
 
   s.name         = "BundleFileUpdater"
-  s.version      = "0.2.0"
+  s.version      = "0.3.0"
   s.summary      = "Deliver your app with up-to-date local resource files and update them dynamically from a remote url."
 
   s.description  = <<-DESC
