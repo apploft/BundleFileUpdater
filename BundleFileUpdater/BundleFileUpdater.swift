@@ -23,7 +23,7 @@ open class BundleFileUpdater {
      - 0: initialization failed: a given `filename` could not be found in app bundle or his destination path in the document directory could not be resolved
      - 1: downloaded file has no changes or is empty
      */
-    open static let BundleFileUpdaterErrorDomain = "BundleFileUpdaterErrorDomain"
+    public static let BundleFileUpdaterErrorDomain = "BundleFileUpdaterErrorDomain"
     
     fileprivate static let codeToReason = ["initialization failed", "downloaded file has no changes or is empty"]
     fileprivate static let applicationSupportURL = try? FileManager.default.url(for: .applicationSupportDirectory, in: .userDomainMask, appropriateFor: nil, create: true).appendingPathComponent("BundleFileUpdater", isDirectory: true)
@@ -60,6 +60,7 @@ open class BundleFileUpdater {
      })
      ```
      */
+    @discardableResult
     open class func updateFile(_ filename: String, url: String, header: [String: String]? = nil, encoding: String.Encoding = .utf8, replacingTexts: [String: String] = [:], didReplaceFile: ((_ destinationURL: URL?, _ error: Error?) -> ())? = nil) -> URL? {
         let fileManager = FileManager.default
         let destinationText: String
