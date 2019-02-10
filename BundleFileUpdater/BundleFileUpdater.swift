@@ -107,11 +107,13 @@ open class BundleFileUpdater {
         
         let task = session.dataTask(with: request as URLRequest, completionHandler: { (data, response, error) in
             guard error == nil,
-                let data = data else {
+                  let data = data,
+                  let httpResponse = response as? HTTPURLResponse,
+                  (0..<400).contains(httpResponse.statusCode) else {
                     didReplaceFile?(destinationURL, error)
                     return
             }
-            
+
             let text = replaceText(String(data: data, encoding: encoding) ?? "", replacingTexts: replacingTexts)
             if !text.isEmpty && (text != destinationText) {
                 do {
@@ -158,7 +160,9 @@ open class BundleFileUpdater {
         
         let task = session.dataTask(with: request as URLRequest, completionHandler: { (data, response, error) in
             guard error == nil,
-                let data = data else {
+                let data = data,
+                let httpResponse = response as? HTTPURLResponse,
+                (0..<400).contains(httpResponse.statusCode) else {
                     return completion("download for file '\(filepath)' failed with error: \(String(describing: error))")
             }
             
