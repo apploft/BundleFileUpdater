@@ -1,7 +1,7 @@
 //
 //  BundleFileUpdater.swift
 //
-//  Created by Michael Kamphausen on 12.11.15.
+//  Created by apploft on 12.11.15.
 //  Copyright © 2015 apploft GmbH. All rights reserved.
 //
 
