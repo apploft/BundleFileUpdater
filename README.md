@@ -1,6 +1,5 @@
 # BundleFileUpdater
 
-[![Version](https://img.shields.io/cocoapods/v/BundleFileUpdater.svg?style=flat)](http://cocoapods.org/pods/BundleFileUpdater)
 [![License](https://img.shields.io/cocoapods/l/BundleFileUpdater.svg?style=flat)](http://cocoapods.org/pods/BundleFileUpdater)
 [![Platform](https://img.shields.io/cocoapods/p/BundleFileUpdater.svg?style=flat)](http://cocoapods.org/pods/BundleFileUpdater)
 
@@ -48,12 +47,9 @@ cat "$PODS_ROOT/BundleFileUpdater/BundleFileUpdater/BundleFileUpdater.swift" "$S
 
 ## Installation
 
-BundleFileUpdater is available through [CocoaPods](http://cocoapods.org). To install
-it, simply add the following line to your Podfile:
+### [Swift Package](https://github.com/apple/swift-package-manager/blob/master/Documentation/PackageDescription.md#supportedplatform)
 
-```ruby
-pod "BundleFileUpdater"
-```
+Just integrate the BundleFileUpdater via Xcode 11 - that's it!
 
 ## License
 
